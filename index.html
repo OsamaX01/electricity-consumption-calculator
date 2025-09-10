@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IFC Analyzer Pro - Architecture Intelligence</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        /* Animated background particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(99, 102, 241, 0.4);
+            border-radius: 50%;
+            animation: float 6s infinite linear;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0px);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-10px) translateX(100px);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: slideDown 0.8s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .logo {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            height: 70vh;
+            min-height: 600px;
+        }
+
+        .upload-section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 1.5rem;
+            animation: slideLeft 0.8s ease-out 0.2s both;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .upload-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #667eea, transparent);
+        }
+
+        @keyframes slideLeft {
+            from {
+                transform: translateX(-50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.2rem;
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+        }
+
+        .upload-area {
+            border: 2px dashed rgba(102, 126, 234, 0.5);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: rgba(102, 126, 234, 0.05);
+            position: relative;
+            cursor: pointer;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+        }
+
+        .upload-area.dragover {
+            border-color: #4ade80;
+            background: rgba(74, 222, 128, 0.1);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 2.5rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover .upload-icon {
+            transform: scale(1.1);
+            color: #764ba2;
+        }
+
+        .upload-text {
+            font-size: 1rem;
+            color: #cbd5e1;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-subtext {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .file-input {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1.2rem;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .upload-btn:active {
+            transform: translateY(0);
+        }
+
+        .upload-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .upload-btn:hover::before {
+            left: 100%;
+        }
+
+        .results-section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 1.5rem;
+            animation: slideRight 0.8s ease-out 0.4s both;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .results-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #4ade80, transparent);
+        }
+
+        @keyframes slideRight {
+            from {
+                transform: translateX(50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .response-box {
+            background: rgba(15, 15, 35, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            flex-grow: 1;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            color: #e2e8f0;
+            position: relative;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            color: #667eea;
+            height: 100%;
+        }
+
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.6s ease-out both;
+        }
+
+        .feature-card:nth-child(1) {
+            animation-delay: 0.6s;
+        }
+
+        .feature-card:nth-child(2) {
+            animation-delay: 0.8s;
+        }
+
+        .feature-card:nth-child(3) {
+            animation-delay: 1s;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(102, 126, 234, 0.5);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.1);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 0.8rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .feature-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #e2e8f0;
+        }
+
+        .feature-desc {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+
+            .container {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 2.2rem;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .upload-section,
+            .results-section {
+                padding: 1.2rem;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .success-message {
+            color: #4ade80;
+            background: rgba(74, 222, 128, 0.1);
+            border: 1px solid rgba(74, 222, 128, 0.3);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1.2rem;
+        }
+
+        .error-message {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1.2rem;
+        }
+
+        /* Results display styles */
+        .energy-summary {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.2rem;
+            margin-bottom: 1.2rem;
+            border-left: 4px solid #667eea;
+        }
+
+        .energy-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0.4rem 0;
+        }
+
+        .energy-label {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .assumptions-list {
+            margin-top: 1.2rem;
+            padding-top: 1.2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .assumptions-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .assumption-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 0.7rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .assumption-item:before {
+            content: "•";
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        /* AI Recommendations Styles */
+        .ai-recommendations {
+            margin-top: 1.2rem;
+            padding-top: 1.2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .ai-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .ai-assessment {
+            background: rgba(255, 215, 0, 0.1);
+            border-left: 4px solid #ffd700;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+
+        .recommendation {
+            background: rgba(102, 126, 234, 0.05);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.8rem;
+            border-left: 4px solid #667eea;
+        }
+
+        .recommendation-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #e2e8f0;
+            font-size: 0.95rem;
+        }
+
+        .recommendation-desc {
+            color: #cbd5e1;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .recommendation-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .detail-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 0.5rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+        }
+
+        .detail-label {
+            color: #94a3b8;
+            font-size: 0.7rem;
+        }
+
+        .priority-areas {
+            background: rgba(74, 222, 128, 0.05);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            border-left: 4px solid #4ade80;
+        }
+
+        .priority-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #e2e8f0;
+            font-size: 0.95rem;
+        }
+
+        .priority-list {
+            list-style-type: none;
+        }
+
+        .priority-list li {
+            padding: 0.3rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .priority-list li:before {
+            content: "✓";
+            color: #4ade80;
+        }
+
+        .ai-error {
+            color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #64748b;
+            text-align: center;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <header class="header">
+            <h1 class="logo">IFC ANALYZER PRO</h1>
+            <p class="subtitle">ArchIntel Team</p>
+        </header>
+
+        <div class="main-content">
+            <div class="upload-section">
+                <h2 class="section-title">
+                    <span class="section-icon">📁</span>
+                    Upload IFC
+                </h2>
+
+                <form id="uploadForm">
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">🏗️</div>
+                        <div class="upload-text">Drop your IFC file here</div>
+                        <div class="upload-subtext">or click to browse • Max 50MB</div>
+                        <input type="file" id="ifcFile" accept=".ifc" class="file-input" />
+                    </div>
+                    <button type="submit" class="upload-btn">
+                        <span id="btnText">Analyze</span>
+                    </button>
+                </form>
+            </div>
+
+            <div class="results-section">
+                <h2 class="section-title">
+                    <span class="section-icon">⚡</span>
+                    Energy Analysis Results
+                </h2>
+
+                <div id="responseBox" class="response-box">
+                    <div class="empty-state">
+                        <div class="empty-icon">🎯</div>
+                        <div>Ready to analyze your IFC file...</div>
+                        <div style="font-size: 0.8rem; margin-top: 0.5rem;">Upload a file to see energy insights</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">🔍</div>
+                <h3 class="feature-title">Deep Analysis</h3>
+                <p class="feature-desc">Advanced parsing of IFC building information models</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3 class="feature-title">Smart Insights</h3>
+                <p class="feature-desc">Extract meaningful data and generate comprehensive reports</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3 class="feature-title">Lightning Fast</h3>
+                <p class="feature-desc">Optimized processing for rapid analysis and quick results</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Create floating particles
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        // Drag and drop functionality
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('ifcFile');
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                updateUploadDisplay(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                updateUploadDisplay(e.target.files[0]);
+            }
+        });
+
+        function updateUploadDisplay(file) {
+            const uploadIcon = uploadArea.querySelector('.upload-icon');
+            const uploadText = uploadArea.querySelector('.upload-text');
+            const uploadSubtext = uploadArea.querySelector('.upload-subtext');
+
+            uploadIcon.textContent = '✅';
+            uploadText.textContent = file.name;
+            uploadSubtext.textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB • Ready to analyze`;
+        }
+
+        // Format numbers with commas
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        // Format AI recommendations
+        function formatAIRecommendations(aiData) {
+            try {
+                // Try to parse as JSON first
+                let recommendations;
+                try {
+                    recommendations = typeof aiData === 'string' ? JSON.parse(aiData) : aiData;
+                } catch (e) {
+                    // If it's not JSON, return as plain text
+                    return `
+                        <div class="ai-recommendations">
+                            <div class="ai-title">🤖 AI Energy Recommendations</div>
+                            <div class="ai-assessment">${aiData}</div>
+                        </div>
+                    `;
+                }
+
+                // If we have a proper JSON structure
+                let html = `
+                    <div class="ai-recommendations">
+                        <div class="ai-title">🤖 AI Energy Recommendations</div>
+                `;
+
+                if (recommendations.assessment) {
+                    html += `<div class="ai-assessment">${recommendations.assessment}</div>`;
+                }
+
+                if (recommendations.recommendations && recommendations.recommendations.length > 0) {
+                    html += `<div class="recommendations-list">`;
+                    recommendations.recommendations.forEach(rec => {
+                        html += `
+                            <div class="recommendation">
+                                <div class="recommendation-title">${rec.title || 'Recommendation'}</div>
+                                <div class="recommendation-desc">${rec.description || ''}</div>
+                                <div class="recommendation-details">
+                        `;
+
+                        if (rec.potential_savings_kwh) {
+                            html += `
+                                <div class="detail-item">
+                                    <div class="detail-label">Potential Savings</div>
+                                    <div>${formatNumber(Math.round(rec.potential_savings_kwh))} kWh/year</div>
+                                </div>
+                            `;
+                        }
+
+                        if (rec.implementation_cost) {
+                            html += `
+                                <div class="detail-item">
+                                    <div class="detail-label">Implementation Cost</div>
+                                    <div>JOD ${formatNumber(Math.round(rec.implementation_cost))}</div>
+                                </div>
+                            `;
+                        }
+
+                        if (rec.payback_period_years) {
+                            html += `
+                                <div class="detail-item">
+                                    <div class="detail-label">Payback Period</div>
+                                    <div>${rec.payback_period_years} years</div>
+                                </div>
+                            `;
+                        }
+
+                        html += `</div></div>`;
+                    });
+                    html += `</div>`;
+                }
+
+                if (recommendations.priority_areas && recommendations.priority_areas.length > 0) {
+                    html += `
+                        <div class="priority-areas">
+                            <div class="priority-title">Priority Areas for Improvement</div>
+                            <ul class="priority-list">
+                    `;
+                    recommendations.priority_areas.forEach(area => {
+                        html += `<li>${area}</li>`;
+                    });
+                    html += `</ul></div>`;
+                }
+
+                html += `</div>`;
+                return html;
+
+            } catch (error) {
+                console.error("Error formatting AI recommendations:", error);
+                return `
+                    <div class="ai-recommendations">
+                        <div class="ai-title">🤖 AI Energy Recommendations</div>
+                        <div class="ai-error">Error processing AI recommendations: ${error.message}</div>
+                    </div>
+                `;
+            }
+        }
+
+        // Form submission
+        document.getElementById("uploadForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const fileInput = document.getElementById("ifcFile");
+            const responseBox = document.getElementById("responseBox");
+            const btnText = document.getElementById("btnText");
+
+            if (!fileInput.files.length) {
+                responseBox.innerHTML = `
+                    <div class="error-message">
+                        <strong>⚠️ No file selected</strong><br>
+                        Please select an IFC file to analyze.
+                    </div>
+                `;
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("file", fileInput.files[0]);
+
+            // Show loading state
+            btnText.textContent = "Analyzing...";
+            responseBox.innerHTML = `
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <span>Processing your IFC file...</span>
+                </div>
+            `;
+
+            try {
+                const res = await fetch("http://localhost:8000/analyze-ifc", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    // Format the response for user-friendly display
+                    const formattedUsage = formatNumber(Math.round(data.annual_usage_kwh));
+                    const formattedCost = formatNumber(Math.round(data.estimated_cost));
+
+                    let recommendationsHtml = '';
+                    let assumptionsHtml = '';
+
+
+                    // Check if we have recommendations first
+                    if (data.recommendations && data.recommendations.length > 0) {
+                        console.log("Recommendations:", data.recommendations);
+                        recommendationsHtml = `<div class="ai-recommendations"><div class="ai-title">💡 Energy Saving Recommendations</div>${data.recommendations.map(rec => `<div class="recommendation"><div class="recommendation-title">${rec.title}</div><div class="recommendation-desc">${rec.description}</div><div class="detail-item"><div class="detail-label">Potential Savings</div><div>${formatNumber(Math.round(rec.potential_savings_kwh))} kWh/year</div></div><div class="detail-item"><div class="detail-label">Implementation Cost</div><div>JOD ${formatNumber(Math.round(rec.implementation_cost_jod))}</div></div><div class="detail-item"><div class="detail-label">Payback Period</div><div>${rec.payback_years} years</div></div></div>`).join("")}</div>`;
+                    }
+                    // Check if we have AI recommendations
+                    else if (data.ai_recommendations) {
+                        console.log("AI Recommendations:", data.ai_recommendations);
+                        recommendationsHtml = formatAIRecommendations(data.ai_recommendations);
+                        if (!recommendationsHtml && Array.isArray(data.ai_recommendations)) {
+                            recommendationsHtml = `<div class="ai-recommendations"><div class="ai-title">🤖 AI Energy Recommendations</div>${data.ai_recommendations.map(rec => `<div class="recommendation"><div class="recommendation-title">${rec.upgrade || rec.title || "Recommendation"}</div><div class="recommendation-desc">Savings: ${rec.potential_savings_kWh || rec.potential_savings_kwh || 0} kWh/year | Cost: JOD ${rec.implementation_costs_JOD || rec.implementation_cost || 0} | Payback: ${rec.payback_period_years || 0} years</div></div>`).join("")}</div>`;
+                        }
+                    } else if (data.assumptions && data.assumptions.length > 0) {
+                        // Fall back to assumptions if no AI recommendations
+                        assumptionsHtml = `
+                            <div class="assumptions-list">
+                                <div class="assumptions-title">
+                                    <span>📝 Assumptions Made</span>
+                                </div>
+                                ${data.assumptions.map(assumption => `
+                                    <div class="assumption-item">${assumption}</div>
+                                `).join('')}
+                            </div>
+                        `;
+                    }
+
+                    responseBox.innerHTML = `
+                        <div class="success-message">
+                            <strong>✅ Analysis Complete</strong><br>
+                            Your building energy analysis is ready.
+                        </div>
+                        
+                        <div class="energy-summary">
+                            <div class="energy-label">Annual Electricity Usage</div>
+                            <div class="energy-value">${formattedUsage} kWh</div>
+                            
+                            <div class="energy-label" style="margin-top: 1.2rem;">Estimated Annual Cost</div>
+                            <div class="energy-value">JOD ${formattedCost}</div>
+                            <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem;">
+                                Based on JOD 0.12 per kWh
+                            </div>
+                        </div>
+                        
+                        ${recommendationsHtml || assumptionsHtml}
+                        
+                        ${data.detailed_report ? `
+                            <div class="ai-recommendations" style="margin-top: 1.5rem;">
+                                <div class="ai-title">💡 Energy Recommendations Summary</div>
+                                <div style="background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 10px; white-space: pre-wrap; font-size: 0.9rem; line-height: 1.6; color: #e2e8f0;">
+                                    ${data.detailed_report}
+                                </div>
+                            </div>
+                        ` : ""}
+                    `;
+                } else {
+                    throw new Error(data.detail || 'Analysis failed');
+                }
+            } catch (err) {
+                responseBox.innerHTML = `
+                    <div class="error-message">
+                        <strong>❌ Analysis Failed</strong><br>
+                        ${err.message}
+                    </div>
+                    <div style="margin-top: 1rem; font-size: 0.8rem; color: #64748b;">
+                        Please check your file format and try again.
+                    </div>
+                `;
+            } finally {
+                btnText.textContent = "Analyze";
+            }
+        });
+
+        // Initialize particles
+        createParticles();
+    </script>
+</body>
+
+</html>
